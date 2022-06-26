@@ -64,7 +64,7 @@ class ClassVK(object):
         params = {
             'user_ids': user_ids,
             'access_token': self.access_token,
-            'fields': 'screen_name, city, bdate, sex',
+            'fields': 'screen_name, city, bdate, sex, screen_name',
             'v': '5.131'
         }
         res = requests.get(url, params=params)
@@ -72,6 +72,7 @@ class ClassVK(object):
         for r in response:
             res = r
             break
+        print(res)
         return res
 
     # def get_id(self, user_ids):

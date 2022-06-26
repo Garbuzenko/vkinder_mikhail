@@ -3,6 +3,7 @@ from vk_api import VkApi
 from vk_api.utils import get_random_id
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 from modules.API.ClassVK import ClassVK
+from modules.LOGIC.logic import Logic
 from modules.data.data import settings, API_VERSION, GROUP_ID, CALLBACK_TYPES
 from modules.db.databases import DataBase
 from modules.keyboard.keyboard import ClassKeyboard
@@ -11,17 +12,15 @@ from modules.utils import utils
 
 def run_comand(comand, user_id):
     content = ''
-    # settings = db.get_setings(user_id)
     key = comand.get('key')
     if key != 'none':
         print(f'Запустить команду {key}')
         if key == 'next':
-            [comand['attachment'], content] = myApi.get_user_data(id=db.get_next_user(user_id))
+            [comand['attachment'], content] = myApi.get_user_data(id=logic.get_next_user(user_id))
         elif key == 'previous':
-            [comand['attachment'], content] = myApi.get_user_data(id=db.get_previous_user(user_id))
+            [comand['attachment'], content] = myApi.get_user_data(id=logic.get_previous_user(user_id))
         elif key == 'search':
-            db.update_search_list(user_id)
-            [comand['attachment'], content] = myApi.get_user_data(id=db.get_next_user(user_id))
+            [comand['attachment'], content] = myApi.get_user_data(id=logic.get_next_user(user_id))
         elif key == 'age_from':
             pass
         elif key == 'age_to':
@@ -41,6 +40,7 @@ vk = vk_session.get_api()
 longpoll = VkBotLongPoll(vk_session, group_id=GROUP_ID)
 myApi = ClassVK(utils.get_token('access_token'))
 db = DataBase(utils.get_token('db_connection'))
+logic = Logic(db)
 print(f"Бот запущен")
 
 # Основной цикл
@@ -64,11 +64,11 @@ for event in longpoll.listen():
             if event.object.payload.get('type') == 'show_snackbar':
                 if  'черный' in event.object.payload.get('text'):
                     print('add_black_list')
-                    db.new_black_id(event.object.user_id, db.get_current_user(event.object.user_id))
+                    db.new_black_id(event.object.user_id, logic.get_current_user(event.object.user_id))
                     pass
                 elif 'избранное' in event.object.payload.get('text'):
                     print('add_favorites')
-                    db.new_favirite(event.object.user_id, db.get_current_user(event.object.user_id))
+                    db.new_favirite(event.object.user_id, logic.get_current_user(event.object.user_id))
                     pass
             r = vk.messages.sendMessageEventAnswer(
                 event_id=event.object.event_id,
