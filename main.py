@@ -93,6 +93,7 @@ for event in longpoll.listen():
                     peer_id=event.object.peer_id,
                     keyboard=ClassKeyboard.get_keyboard(comand['keyboard']).get_keyboard(),
                     message=utils.get_answer(comand))
+        logic.upd_settings(user_id)
 
 if __name__ == '__main__':
     print("test")

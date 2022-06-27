@@ -22,37 +22,32 @@ class DataBase(object):
         self.connection = self.engine.connect()
 
     #Добавить в таблицу SEARCH пачку из 100 новых пользователей
-    def update_search_list(self, user_id, position):
-        myApi = ClassVK(utils.get_token('access_token'))
-        count = 10
-        offset = 10 #Надо заполнить
-        list = myApi.search( user_id, offset, count)
-        pprint(list)
-        for l in list:
-
-            sql = f"""SELECT * FROM last_search WHERE vk_id='{user_id}' and lst_id='{l}');
-                   """
-            print(sql)
-            result = self.connection.execute(sql).fetchone()
-            if result==None:
-                sql = f"""INSERT INTO last_search(vk_id, lst_id, srch_number) VALUES ('{user_id}','{l}','{position}';
-                       """
-                print(sql)
-                result = self.connection.execute(sql).fetchone()
-                position += 1
-        return id
+    # def update_search_list(self, user_id, position):
+    #     myApi = ClassVK(utils.get_token('access_token'))
+    #     count = 10
+    #     offset = 10 #Надо заполнить
+    #     list = myApi.search( user_id, offset, count)
+    #     pprint(list)
+    #     for l in list:
+    #         sql = f"""SELECT * FROM last_search WHERE vk_id='{user_id}' and lst_id='{l}';
+    #                """
+    #         print(sql)
+    #         result = self.connection.execute(sql).fetchone()
+    #         if result is None:
+    #             sql = f"""INSERT INTO last_search(vk_id, lst_id, srch_number) VALUES ('{user_id}','{l}','{position}');
+    #                    """
+    #             print(sql)
+    #             result = self.connection.execute(sql).fetchone()
+    #             position += 1
+    #     return id
 
     def get_user(self, user_id, rch_number):
-
         sql = f"""
                SELECT * FROM last_search WHERE vk_id={user_id} AND srch_number = {rch_number} LIMIT 1;
                """
         result = self.connection.execute(sql).fetchone()
-        if result == None:
-            self.update_search_list(user_id, rch_number)
-        else:
-            id = result[0]
-        return id
+        return result
+
     #!!!получить список избранных контактов
     def get_favorites(self, vk_id : int) -> list:
         pass
@@ -74,6 +69,12 @@ class DataBase(object):
                """
         # print(sql)
         return self.connection.execute(sql).fetchone()
+
+    def upd_setings(self, user_id, access_token='', srch_offset=0, age_from=20, age_to=50, last_command=''):
+        sql = f"""
+        UPDATE settings SET srch_offset = '{srch_offset}' where vk_id={user_id};
+               """
+        res = self.connection.execute(sql).fetchone()
 
     #Настройки
     def get_setings(self, user_id):
