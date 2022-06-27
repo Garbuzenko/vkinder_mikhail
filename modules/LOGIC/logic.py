@@ -1,5 +1,4 @@
 from pprint import pprint
-
 from vk_api.bot_longpoll import VkBotEventType
 from modules.db.dataclasses import OFFSET_NOTDEFINED, VK_ID_NOTDEFINED, VKUserData
 
@@ -49,7 +48,7 @@ class Logic(object):
         if user is None:
             self.update_search_list(user_id)
             user = self.db.get_user(user_id, self.position)
-        return user
+        return user[0]
 
     #Следующий обрабатываемый пользователь
     def get_next_user(self, user_id):
@@ -72,12 +71,14 @@ class Logic(object):
         return favorites
 
     def get_settings(self, user_id: int):
-        settings = self.db.get_setings_2(user_id)
-        if settings is None:
-            self.db.set_setings(user_id=user_id)
-            settings = self.db.get_setings_2(user_id)
-        pprint(settings)
-        self.position = settings[2]
+        vkUser = VKUserData(self.api.get_info(user_id))
+        self.position = self.db.get_setings(vkUser).settings['srch_offset']
+        # settings = self.db.get_setings_2(user_id)
+        # if settings is None:
+        #     self.db.set_setings(user_id=user_id)
+        #     settings = self.db.get_setings_2(user_id)
+        # pprint(settings)
+        # self.position = settings[2]
 
     def set_settings(self, user_id: int):
         self.db.set_setings(user_id=user_id,srch_offset=self.position)

@@ -125,14 +125,14 @@ class DataBase(object):
             # если запрос к базе данных ничего не вернул
             vk_user.set_default_settings()
             return False
-        return True
+        return vk_user
 
     def get_user(self, user_id, rch_number):
         sql = f"""
                SELECT lst_id FROM last_search WHERE vk_id={user_id} AND srch_number = {rch_number} LIMIT 1;
                """
         result = self.connection.execute(sql).fetchone()
-        return result[0]
+        return result
 
     #!!!получить список избранных контактов
     def get_favorites(self, vk_id : int) -> list:
@@ -155,11 +155,11 @@ class DataBase(object):
                """
         res = self.connection.execute(sql)
 
-    #Настройки
-    def get_setings_2(self, user_id):
-        sql = f"""
-                  SELECT * FROM settings WHERE vk_id={user_id} LIMIT 1;
-                  """
-        result = self.connection.execute(sql).fetchone()
-        return result
+    # #Настройки
+    # def get_setings_2(self, user_id):
+    #     sql = f"""
+    #               SELECT * FROM settings WHERE vk_id={user_id} LIMIT 1;
+    #               """
+    #     result = self.connection.execute(sql).fetchone()
+    #     return result
 

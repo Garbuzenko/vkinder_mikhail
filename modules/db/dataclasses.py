@@ -8,7 +8,7 @@ from datetime import datetime
 # id "по умолчания" (т.е. не определенный) при создании класса
 VK_ID_NOTDEFINED = -1
 # settings.srch_offcet - текущая позиция в списке поиска по запросу не задана "по умолчанию"
-OFFSET_NOTDEFINED = -1
+OFFSET_NOTDEFINED = 0
 
 # Пол пользователя ВКонтакте
 VK_MALE = 2

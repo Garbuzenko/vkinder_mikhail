@@ -1,6 +1,4 @@
 import json
-from pprint import pprint
-
 from vk_api import VkApi
 from vk_api.utils import get_random_id
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
@@ -10,7 +8,6 @@ from modules.data.data import settings, API_VERSION, GROUP_ID, CALLBACK_TYPES
 from modules.db.databases import DataBase
 from modules.keyboard.keyboard import ClassKeyboard
 from modules.utils import utils
-
 
 def run_comand(comand, user_id):
     content = ''
