@@ -73,12 +73,6 @@ class Logic(object):
     def get_settings(self, user_id: int):
         vkUser = VKUserData(self.api.get_info(user_id))
         self.position = self.db.get_setings_smart(vkUser).settings['srch_offset']
-        # settings = self.db.get_setings_2(user_id)
-        # if settings is None:
-        #     self.db.set_setings(user_id=user_id)
-        #     settings = self.db.get_setings_2(user_id)
-        # pprint(settings)
-        # self.position = settings[2]
 
     def set_settings(self, user_id: int):
         self.db.set_setings(user_id=user_id,srch_offset=self.position)

@@ -130,7 +130,7 @@ class DataBase(object):
             # если запрос к базе данных ничего не вернул
             vk_user.set_default_settings()
             #Важно создать исходную настройку, чтобы потом делать UPDATE
-            self.set_setings( vk_user.vk_id, 
+            self.set_setings( vk_user.vk_id,
                               vk_user.settings.get('access_token'),
                               vk_user.settings.get('srch_offset'),
                               vk_user.settings.get('age_from'),
