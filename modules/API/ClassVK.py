@@ -69,6 +69,7 @@ class ClassVK(object):
         }
         res = requests.get(url, params=params)
         response = res.json().get("response")
+        print(response)
         for r in response:
             res = r
             break
