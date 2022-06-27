@@ -29,7 +29,6 @@ class ClassVK(object):
         content = ''
         if id != 0:
             params = self.get_info(id)
-
             content = f'\n{params.get("first_name")} {params.get("last_name")}'
             self.get_info(id)  # Параметры пользователя
 
@@ -38,6 +37,7 @@ class ClassVK(object):
                 items = photos['response']['items']
                 for item in items:
                         attachments.append(f'photo{id}_{item.get("id")}')
+        pprint(','.join(attachments))
         return [','.join(attachments), content]
 
     def users_search(self, params_data, count=1, offset=0):
@@ -72,7 +72,7 @@ class ClassVK(object):
         for r in response:
             res = r
             break
-        print(res)
+        # print(res)
         return res
 
     # def get_id(self, user_ids):

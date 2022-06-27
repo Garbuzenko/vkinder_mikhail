@@ -1,7 +1,14 @@
 ###########################
 # файл: dataclasses.py
-# version: 0.1.4
+# version: 0.1.7
 ###########################
+
+from datetime import datetime
+
+# id "по умолчания" (т.е. не определенный) при создании класса
+VK_ID_NOTDEFINED = -1
+# settings.srch_offcet - текущая позиция в списке поиска по запросу не задана "по умолчанию"
+OFFSET_NOTDEFINED = -1
 
 # Пол пользователя ВКонтакте
 VK_MALE = 2
@@ -33,26 +40,32 @@ class VKUserData(object):
     settings: list
 
     # инициализация класса
-    def __init__(self, lst=[]):
+    def __init__(self, *vk_data):
         super().__init__()
 
         # если никакие аргументы не переданы
-        if len(lst) == 0:
+        if len(vk_data) == 0:
             # инициализация данных "по умолчанию"
             self.set_default_attrs()
         else:
-            # если заполнение из переданного списка было не корректным
-            if not self.set_attr_from_list(lst):
-                # то также заполняем параметрами "по умолчанию"
-                self.set_default_attrs()
-        # инициализируем дополниетльные параметры класса (settings)
+            if type(vk_data[0]) is list:
+                # если заполнение из переданного списка было не корректным
+                if not self.set_attr_from_list(vk_data[0]):
+                    # то также заполняем параметрами "по умолчанию"
+                    self.set_default_attrs()
+            elif type(vk_data[0]) is dict:
+                if not self.set_attr_from_dict(vk_data[0]):
+                    # то также заполняем параметрами "по умолчанию"
+                    self.set_default_attrs()
+
+                    # инициализируем дополниетльные параметры класса (settings)
         self.set_default_settings()
 
     # end __init__()
 
     # функция заполнения атрибутов класса "по умолчанию"
     def set_default_attrs(self):
-        self.vk_id = -1
+        self.vk_id = VK_ID_NOTDEFINED
         self.first_name = ''
         self.last_name = ''
         self.bdate = ''
@@ -61,14 +74,16 @@ class VKUserData(object):
         self.city_title = ''
         self.vkdomain = ''
         self.last_visit = ''
+        dt = datetime.now()
+        self.last_visit = dt.strftime('%Y-%m-%d %H:%M:%S')
 
     # end set_default_attrs()
 
     # функция заполнения "по умолчанию" дополнительных параметров (settings)
     def set_default_settings(self):
-        self.settings = {'access_token': '', 'srch_offset': -1, 'age_from': -1, 'age_to': -1, 'last_command': ''}
+        self.settings = {'access_token': '', 'srch_offset': OFFSET_NOTDEFINED, 'age_from': -1,
+                         'age_to': -1, 'last_command': ''}
 
-    # end set_default_settings
 
     # заполнение атрибутов класса (данные) из списка, по порядку
     def set_attr_from_list(self, lst: list) -> bool:
@@ -85,12 +100,47 @@ class VKUserData(object):
         self.city_title = lst[6]
         self.vkdomain = lst[7]
         self.last_visit = lst[8]
+        dt = datetime.now()
+        self.last_visit = dt.strftime('%Y-%m-%d %H:%M:%S')
         return True
 
     # end set_attr_from_list()
 
-    # вывод данных о пользователе в формате json
-    def json():
-        pass
+    # заполнение атрибутов класса из словаря vk
+    # {'id': int, 'bdate': str, 'city': {'id': int, 'title': str}, 'sex': int,
+    #  'screen_name': str, 'first_name': str, 'last_name': str, 'can_access_closed': bool, 'is_closed': bool}
+    def set_attr_from_dict(self, vk_dict: dict) -> bool:
+        # проверяем, что все необходимые ключи нам переданы
+        if 'id' in vk_dict.keys():
+            self.vk_id = vk_dict.get('id')
+        if 'first_name' in vk_dict.keys():
+            self.first_name = vk_dict.get('first_name')
+        if 'last_name' in vk_dict.keys():
+            self.last_name = vk_dict.get('last_name')
+        if 'bdate' in vk_dict.keys():
+            self.bdate = vk_dict.get('bdate')
+        if 'city' in vk_dict.keys():
+            self.city_id = vk_dict.get('city').get('id')
+            self.city_title = vk_dict.get('city').get('title')
+        if 'sex' in vk_dict.keys():
+            self.gender = vk_dict.get('sex')
+        if 'screen_name' in vk_dict.keys():
+            self.vkdomain = vk_dict.get('screen_name')
+        dt = datetime.now()
+        self.last_visit = dt.strftime('%Y-%m-%d %H:%M:%S')
+        return True
+
+    # end set_attr_from_dict()
+
+    # функция заполнения дополнительных параметров (settings) из списка
+    def set_settings_from_list(self, lst: list):
+        # если передан полный список ,то заполняем дополнительные свойства
+        if len(lst) == 5:
+            self.settings['access_token'] = lst[0]
+            self.settings['srch_offset'] = lst[1]
+            self.settings['age_from'] = lst[2]
+            self.settings['age_to'] = lst[3]
+            self.settings['last_command'] = lst[4]
+    # end set_settings_from_list()
 
 # end class VKUserData

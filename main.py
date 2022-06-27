@@ -74,7 +74,7 @@ for event in longpoll.listen():
                         pass
                     elif 'избранное' in event.object.payload.get('text'):
                         print('add_favorites')
-                        db.new_favirite(event.object.user_id, logic.get_current_user(event.object.user_id))
+                        db.new_favorite(event.object.user_id, logic.get_current_user(event.object.user_id))
                         pass
                 r = vk.messages.sendMessageEventAnswer(
                     event_id=event.object.event_id,
