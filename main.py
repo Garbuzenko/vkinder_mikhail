@@ -1,4 +1,6 @@
 import json
+from pprint import pprint
+
 from vk_api import VkApi
 from vk_api.utils import get_random_id
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
@@ -16,11 +18,11 @@ def run_comand(comand, user_id):
     if key != 'none':
         print(f'Запустить команду {key}')
         if key == 'next':
-            [comand['attachment'], content] = myApi.get_user_data(id=logic.get_next_user(user_id))
+            [comand['attachment'], content] = logic.get_next_user(user_id)
         elif key == 'previous':
-            [comand['attachment'], content] = myApi.get_user_data(id=logic.get_previous_user(user_id))
+            [comand['attachment'], content] = logic.get_previous_user(user_id)
         elif key == 'search':
-            [comand['attachment'], content] = myApi.get_user_data(id=logic.get_next_user(user_id))
+            [comand['attachment'], content] = logic.get_next_user(user_id)
         elif key == 'age_from':
             pass
         elif key == 'age_to':
@@ -40,53 +42,57 @@ vk = vk_session.get_api()
 longpoll = VkBotLongPoll(vk_session, group_id=GROUP_ID)
 myApi = ClassVK(utils.get_token('access_token'))
 db = DataBase(utils.get_token('db_connection'))
-logic = Logic(db)
+logic = Logic(db, myApi)
 print(f"Бот запущен")
 
 # Основной цикл
 for event in longpoll.listen():
-    if event.type == VkBotEventType.MESSAGE_NEW:
-        # Если пришло новое сообщение
-        if event.obj.message['text'] != '':
-            if event.from_user:
-                comand = utils.get_comand(event.obj.message['text'])
+    user_id = logic.get_user_id(event)
+    if user_id:
+        logic.get_settings(user_id)
+        # pprint(settings)
+        if event.type == VkBotEventType.MESSAGE_NEW:
+            # Если пришло новое сообщение
+            if event.obj.message['text'] != '':
+                if event.from_user:
+                    comand = utils.get_comand(event.obj.message['text'])
+                    comand = run_comand(comand=comand, user_id=event.object.user_id)
+                    vk.messages.send(
+                        user_id=user_id,
+                        attachment=comand.get('attachment'),
+                        random_id=get_random_id(),
+                        peer_id=event.obj.message['from_id'],
+                        keyboard=ClassKeyboard.get_keyboard(comand['keyboard']).get_keyboard(),
+                        message=utils.get_answer(comand))
+        elif event.type == VkBotEventType.MESSAGE_EVENT:
+            #Пришло событие от кнопки
+            if event.object.payload.get('type') in CALLBACK_TYPES:
+                if event.object.payload.get('type') == 'show_snackbar':
+                    if  'черный' in event.object.payload.get('text'):
+                        print('add_black_list')
+                        db.new_black_id(event.object.user_id, logic.get_current_user(event.object.user_id))
+                        pass
+                    elif 'избранное' in event.object.payload.get('text'):
+                        print('add_favorites')
+                        db.new_favirite(event.object.user_id, logic.get_current_user(event.object.user_id))
+                        pass
+                r = vk.messages.sendMessageEventAnswer(
+                    event_id=event.object.event_id,
+                    user_id=user_id,
+                    peer_id=event.object.peer_id,
+                    event_data=json.dumps(event.object.payload))
+            else:
+                #Кастомный тип
+                comand = utils.get_comand(event.object.payload.get('type'))
                 comand = run_comand(comand=comand, user_id=event.object.user_id)
+                print(comand.get('attachment'))
                 vk.messages.send(
-                    user_id=event.obj.message['from_id'],
+                    user_id=user_id,
                     attachment=comand.get('attachment'),
                     random_id=get_random_id(),
-                    peer_id=event.obj.message['from_id'],
+                    peer_id=event.object.peer_id,
                     keyboard=ClassKeyboard.get_keyboard(comand['keyboard']).get_keyboard(),
                     message=utils.get_answer(comand))
-    elif event.type == VkBotEventType.MESSAGE_EVENT:
-        #Пришло событие от кнопки
-        if event.object.payload.get('type') in CALLBACK_TYPES:
-            if event.object.payload.get('type') == 'show_snackbar':
-                if  'черный' in event.object.payload.get('text'):
-                    print('add_black_list')
-                    db.new_black_id(event.object.user_id, logic.get_current_user(event.object.user_id))
-                    pass
-                elif 'избранное' in event.object.payload.get('text'):
-                    print('add_favorites')
-                    db.new_favirite(event.object.user_id, logic.get_current_user(event.object.user_id))
-                    pass
-            r = vk.messages.sendMessageEventAnswer(
-                event_id=event.object.event_id,
-                user_id=event.object.user_id,
-                peer_id=event.object.peer_id,
-                event_data=json.dumps(event.object.payload))
-        else:
-            #Кастомный тип
-            comand = utils.get_comand(event.object.payload.get('type'))
-            comand = run_comand(comand=comand, user_id=event.object.user_id)
-            print(comand.get('attachment'))
-            vk.messages.send(
-                user_id=event.object.user_id,
-                attachment=comand.get('attachment'),
-                random_id=get_random_id(),
-                peer_id=event.object.peer_id,
-                keyboard=ClassKeyboard.get_keyboard(comand['keyboard']).get_keyboard(),
-                message=utils.get_answer(comand))
 
 if __name__ == '__main__':
     print("test")

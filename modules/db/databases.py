@@ -35,7 +35,7 @@ class DataBase(object):
             print(sql)
             result = self.connection.execute(sql).fetchone()
             if result==None:
-                sql = f"""INSERT INTO last_search(vk_id, lst_id, srch_number) VALUES ('{user_id}','{l}','{position}');
+                sql = f"""INSERT INTO last_search(vk_id, lst_id, srch_number) VALUES ('{user_id}','{l}','{position}';
                        """
                 print(sql)
                 result = self.connection.execute(sql).fetchone()
@@ -61,17 +61,29 @@ class DataBase(object):
 
     #Сдвиг offset на число и возврат позиции
     def move_offset(self, user_id, i):
-        pass
-        return random.randint(10, 100)
+        return 1
 
     def get_offset(self, user_id):
         pass
-        return random.randint(10, 100)
+        return 1
+
+    def set_setings(self, user_id, access_token='', srch_offset=0, age_from=20, age_to=50, last_command=''):
+        sql = f"""
+        INSERT INTO settings(vk_id, access_token, srch_offset, age_from, age_to, last_command) 
+        VALUES ('{user_id}','{access_token}','{srch_offset}','{age_from}','{age_to}','{last_command}');
+               """
+        # print(sql)
+        return self.connection.execute(sql).fetchone()
+
     #Настройки
-    def get_setings(self, vk_user: VKUserData) -> Boolean:
-        pass
-        json_example = {'srch_offset': 1, 'age_from': 20, 'age_to': 30, 'access_token': ''}
-        return json_example
+    def get_setings(self, user_id):
+        sql = f"""
+                  SELECT * FROM settings WHERE vk_id={user_id} LIMIT 1;
+                  """
+        # print(sql)
+        result = self.connection.execute(sql).fetchone()
+        # print(result)
+        return result
 
         # функция получения данных пользователя ВКонтакте из базы данных
         # возвращает объект типа VKUserData или None, если запрос неудачный (нет данных)
@@ -130,8 +142,7 @@ class DataBase(object):
         pass
 
     #
-    def get_setings(self, vk_user: VKUserData) -> bool:
-        pass
+
 
     #
     def update_settings(self, vk_user: VKUserData) -> bool:
