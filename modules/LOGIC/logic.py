@@ -37,7 +37,7 @@ class Logic(object):
         # end get_vk_user()
 
     def update_search_list(self, user_id):
-        count = 5
+        count = 5 #Размер пакета данных
         offset = self.position + 1
         position = self.position
         list = self.api.search(user_id, offset, count)
@@ -72,7 +72,7 @@ class Logic(object):
 
     def get_settings(self, user_id: int):
         vkUser = VKUserData(self.api.get_info(user_id))
-        self.position = self.db.get_setings(vkUser).settings['srch_offset']
+        self.position = self.db.get_setings_smart(vkUser).settings['srch_offset']
         # settings = self.db.get_setings_2(user_id)
         # if settings is None:
         #     self.db.set_setings(user_id=user_id)

@@ -110,12 +110,17 @@ class DataBase(object):
     def del_black_list(self, vk_id: int) -> bool:
         pass
 
-    # считать дополнительные данные о пользователе из базы данных
-    def get_setings(self, vk_user: VKUserData) -> bool:
+    #Настройки
+    def get_setings(self, user_id):
         sql = f"""
-            SELECT * FROM settings WHERE vk_id={vk_user.vk_id};
-            """
+                  SELECT * FROM settings WHERE vk_id={user_id} LIMIT 1;
+                  """
         result = self.connection.execute(sql).fetchone()
+        return result
+    # считать дополнительные данные о пользователе из базы данных
+    def get_setings_smart(self, vk_user: VKUserData) -> bool:
+        result = self.get_setings(vk_user.vk_id)
+
         # если запрос выполнился успешно
         if result is not None:
             # заполняем и возвращаем объект VKUserData
@@ -124,7 +129,15 @@ class DataBase(object):
         else:
             # если запрос к базе данных ничего не вернул
             vk_user.set_default_settings()
-            return False
+            #Важно создать исходную настройку, чтобы потом делать UPDATE
+            self.set_setings( vk_user.vk_id, 
+                              vk_user.settings.get('access_token'),
+                              vk_user.settings.get('srch_offset'),
+                              vk_user.settings.get('age_from'),
+                              vk_user.settings.get('age_to'),
+                              vk_user.settings.get('last_command'))
+            # return False
+        # return True
         return vk_user
 
     def get_user(self, user_id, rch_number):
@@ -155,11 +168,5 @@ class DataBase(object):
                """
         res = self.connection.execute(sql)
 
-    # #Настройки
-    # def get_setings_2(self, user_id):
-    #     sql = f"""
-    #               SELECT * FROM settings WHERE vk_id={user_id} LIMIT 1;
-    #               """
-    #     result = self.connection.execute(sql).fetchone()
-    #     return result
+
 
