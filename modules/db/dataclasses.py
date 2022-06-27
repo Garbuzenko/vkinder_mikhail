@@ -84,7 +84,6 @@ class VKUserData(object):
         self.settings = {'access_token': '', 'srch_offset': OFFSET_NOTDEFINED, 'age_from': -1,
                          'age_to': -1, 'last_command': ''}
 
-
     # заполнение атрибутов класса (данные) из списка, по порядку
     def set_attr_from_list(self, lst: list) -> bool:
         # проверяем, что переданы все атрибуты (пока без settings)
