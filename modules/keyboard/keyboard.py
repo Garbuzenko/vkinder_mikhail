@@ -12,14 +12,6 @@ class ClassKeyboard:
                                      payload={"type": "open_link",
                                               "link": "https://oauth.vk.com/authorize?client_id=8116853&scope=wall,offline&redirect_uri=https://cosmio.io/api/vkinder/api.php&display=page&v=5.24&response_type=token"})
         keyboard.add_line()
-
-        keyboard.add_callback_button(label='Возраст от', color=VkKeyboardColor.SECONDARY,
-                                     payload={"type": "age_from", "text": "Возраст от"})
-
-        keyboard.add_callback_button(label='Возраст до', color=VkKeyboardColor.SECONDARY,
-                                     payload={"type": "age_to", "text": "Возраст до"})
-
-        keyboard.add_line()
         keyboard.add_callback_button('Назад', color=VkKeyboardColor.NEGATIVE, payload={"type": "menu"})
         return keyboard
 
@@ -85,4 +77,4 @@ class ClassKeyboard:
             keyboard = ClassKeyboard.search()
         else:
             keyboard = ClassKeyboard.menu()
-        return keyboard
+        return keyboard.get_keyboard()

@@ -51,7 +51,7 @@ comands = {
              'key': 'favorites',
              'keyboard': 'menu'},
     'none': {'in': [],
-             'out': ['Не знаю что делать'],
+             'out': ['Используйте кнопки для управления'],
              'keyboard': 'menu'}
 }
 
