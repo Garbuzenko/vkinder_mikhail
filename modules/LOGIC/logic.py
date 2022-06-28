@@ -39,10 +39,14 @@ class Logic(object):
             self.db.get_setings(vk_user)
         return vk_user
 
+    def get_list(self, content, _list):
+        for l in _list:
+            content += f'{self.api.get_user_data(l)[1]}'
+        return content
     def run_comand(self, comand):
         content = ''
         key = comand.get('key')
-        if key != 'none':
+        if not key is None and key != 'none':
             print(f'Запустить команду {key}')
             if key == 'next':
                 [comand['attachment'], content] = self.get_next_user()
@@ -50,52 +54,61 @@ class Logic(object):
                 [comand['attachment'], content] = self.get_previous_user()
             elif key == 'search':
                 [comand['attachment'], content] = self.get_next_user()
-            elif key == 'age_from':
-                pass
-            elif key == 'age_to':
-                pass
             elif key == 'black_list':
-                for l in self.db.get_black_list(self.vkUser.vk_id):
-                    user_data = self.api.get_user_data(l)
-                    content += f'{user_data[1]}'
+                content = self.get_list(content, self.db.get_black_list(self.vkUser.vk_id))
             elif key == 'favorites':
-                for l in self.db.get_favorites(self.vkUser.vk_id):
-                    content += f'{self.api.get_user_data(l)[1]}'
+                content = self.get_list(content, self.db.get_black_list(self.vkUser.vk_id))
         comand['content'] = content
         return comand
 
     def update_search_list(self):
         count = 10 #Размер пакета данных
-        position = self.vkUser.settings['srch_offset']
+        position = self.vkUser.settings.get('srch_offset')
         offset = position + 1
         list = self.api.search(self.vkUser, offset, count)
         self.db.insert_last_search(self.vkUser.vk_id, list, position)
 
     def get_user(self, user_id):
+        print(self.vkUser.settings['srch_offset'])
         user = self.db.get_user(user_id, self.vkUser.settings['srch_offset'])
         if user is None:
             self.update_search_list()
             user = self.db.get_user(user_id, self.vkUser.settings['srch_offset'])
-        return user[0]
+        print(self.vkUser.settings['srch_offset'])
+        if user is None:
+            return None
+        else:
+            return user[0]
 
     #Следующий обрабатываемый пользователь
     def get_next_user(self):
         self.vkUser.settings['srch_offset'] += 1
+
         id = self.get_user(self.vkUser.vk_id)
-        if self.db.is_black(self.vkUser.vk_id, id) == True:
+
+        if id is None:
             return self.get_next_user()
         else:
-            return self.api.get_user_data(id)
+            if  self.db.is_black(self.vkUser.vk_id, id) == True:
+                return self.get_next_user()
+            else:
+                return self.api.get_user_data(id)
 
     #Предыдущий обрабатываемый пользователь
     def get_previous_user(self):
-        if self.vkUser.settings['srch_offset'] > 1:
-            self.vkUser.settings['srch_offset'] += -1
+        self.vkUser.settings['srch_offset'] -= 1
+        if self.vkUser.settings.get('srch_offset') > 1:
             id = self.get_user(self.vkUser.vk_id)
-            if self.db.is_black(self.vkUser.vk_id, id) == True:
+            print(id)
+            if id is None:
                 return self.get_previous_user()
             else:
-                return self.api.get_user_data(id)
+                if self.db.is_black(self.vkUser.vk_id, id) == True:
+                    return self.get_previous_user()
+                else:
+                    return self.api.get_user_data(id)
+        else:
+            return [None, "не существует"]
 
     def get_settings(self, user_id: int):
         self.vkUser.vk_id = user_id

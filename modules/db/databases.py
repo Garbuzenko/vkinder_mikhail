@@ -187,7 +187,6 @@ class DataBase(object):
             vk_user.set_default_settings()
             return False
         return True
-    # end get_setings()
 
     def get_user(self, user_id, rch_number):
         sql = f"""

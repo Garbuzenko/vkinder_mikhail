@@ -41,16 +41,17 @@ class ClassVK(object):
                     items = photos['response']['items']
                     for item in items:
                         attachments.append(f'photo{id}_{item.get("id")}')
-        # pprint(','.join(attachments))
         return [','.join(attachments), content]
 
     def users_search(self, vk_user: VKUserData, params_data, count=1, offset=0):
         method = 'users.search'
         url = self.API_URL + method
         access_token = vk_user.settings['access_token']
+        if params_data.get("city"):
+            city = params_data.get("city").get("id")
         if not access_token:
             access_token = self.access_token
-        params = dict(count=count, city=params_data.get("city").get("id"), offset=offset,
+        params = dict(count=count, city=city, offset=offset,
                       age_from=vk_user.settings['age_from'], age_to=vk_user.settings['age_to'],
                       sex=self.sex_invert(params_data.get("sex")), access_token=access_token, v='5.131', has_photo=1, status=6, sort=0)
 
@@ -60,7 +61,7 @@ class ClassVK(object):
         ids = []
         for r in response.get('items'):
             if r.get("can_access_closed"):
-                print(r)
+                # print(r)
                 ids.append(r.get("id"))
         return ids
 
