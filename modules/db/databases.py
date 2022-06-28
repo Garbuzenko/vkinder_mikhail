@@ -160,6 +160,17 @@ class DataBase(object):
     def del_black_list(self, vk_id: int) -> bool:
         pass
 
+    def is_black(self, vk_id: int, blk_id: int) -> bool:
+        sql = f"""
+              SELECT * FROM black_list WHERE vk_id={vk_id} AND blk_id={blk_id} ;
+              """
+        result = self.connection.execute(sql).fetchone()
+        print(result)
+        if result is None:
+            return False
+        else:
+            return True
+
     # считать дополнительные данные о пользователе из базы данных
     def get_setings(self, vk_user: VKUserData) -> bool:
         sql = f"""

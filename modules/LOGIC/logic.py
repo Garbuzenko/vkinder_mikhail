@@ -81,22 +81,21 @@ class Logic(object):
     #Следующий обрабатываемый пользователь
     def get_next_user(self):
         self.vkUser.settings['srch_offset'] += 1
-        return self.api.get_user_data(self.get_user(self.vkUser.vk_id))
+        id = self.get_user(self.vkUser.vk_id)
+        if self.db.is_black(self.vkUser.vk_id, id) == True:
+            return self.get_next_user()
+        else:
+            return self.api.get_user_data(id)
 
     #Предыдущий обрабатываемый пользователь
     def get_previous_user(self):
-        self.vkUser.settings['srch_offset'] += -1
-        return self.api.get_user_data(self.get_user(self.vkUser.vk_id))
-
-    #Текущий обрабатываемый пользователь
-    def get_current_user(self):
-        return self.api.get_user_data(self.get_user(self.vkUser.vk_id))
-
-    # #получить список избранных контактов
-    # def get_favorites(self, vk_id : int) -> list:
-    #     pass
-    #     favorites = [1000, 1001]
-    #     return favorites
+        if self.vkUser.settings['srch_offset'] > 1:
+            self.vkUser.settings['srch_offset'] += -1
+            id = self.get_user(self.vkUser.vk_id)
+            if self.db.is_black(self.vkUser.vk_id, id) == True:
+                return self.get_previous_user()
+            else:
+                return self.api.get_user_data(id)
 
     def get_settings(self, user_id: int):
         self.vkUser.vk_id = user_id

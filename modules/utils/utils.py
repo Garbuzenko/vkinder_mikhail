@@ -12,6 +12,7 @@ def get_answer(el):
     return answer
 
 def get_comand(request):
+    request = request.lower()
     c = 'none'
     for c in comands:
         el = comands[c]

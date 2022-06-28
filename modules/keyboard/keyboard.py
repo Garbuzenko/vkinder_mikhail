@@ -35,12 +35,12 @@ class ClassKeyboard:
                                      payload={"type": "menu"})
         return keyboard
 
-    @staticmethod
-    def back():
-        # №2. Клавиатура с одной красной callback-кнопкой. Нажатие изменяет меню на предыдущее.
-        keyboard = VkKeyboard(**settings)
-        keyboard.add_callback_button('Назад', color=VkKeyboardColor.NEGATIVE, payload={"type": "menu"})
-        return keyboard
+    # @staticmethod
+    # def back():
+    #     # №2. Клавиатура с одной красной callback-кнопкой. Нажатие изменяет меню на предыдущее.
+    #     keyboard = VkKeyboard(**settings)
+    #     keyboard.add_callback_button('Назад', color=VkKeyboardColor.NEGATIVE, payload={"type": "menu"})
+    #     return keyboard
 
     @staticmethod
     def menu():
@@ -69,8 +69,8 @@ class ClassKeyboard:
         print(type_keyboard)
         if type_keyboard == 'menu':
             keyboard = ClassKeyboard.menu()
-        elif type_keyboard == 'back':
-            keyboard = ClassKeyboard.back()
+        # elif type_keyboard == 'back':
+        #     keyboard = ClassKeyboard.back()
         elif type_keyboard == 'settings':
             keyboard = ClassKeyboard.settings()
         elif type_keyboard == 'search':

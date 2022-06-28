@@ -24,14 +24,14 @@ class ClassVK(object):
     def search(self, vk_user: VKUserData, offset, count):
         params = self.get_info(vk_user.vk_id)
         search_list = self.users_search(vk_user, params, count=count, offset=offset)
-        pprint(search_list)
+        # pprint(search_list)
         return search_list
     def get_user_data(self, id):
         attachments = []
         content = ''
         if id != 0:
             params = self.get_info(id)
-            pprint(params)
+            # pprint(params)
             if params:
                 content = f'\n{params.get("first_name")} {params.get("last_name")} https://vk.com/id{id}'
                 self.get_info(id)  # Параметры пользователя
@@ -41,7 +41,7 @@ class ClassVK(object):
                     items = photos['response']['items']
                     for item in items:
                         attachments.append(f'photo{id}_{item.get("id")}')
-        pprint(','.join(attachments))
+        # pprint(','.join(attachments))
         return [','.join(attachments), content]
 
     def users_search(self, vk_user: VKUserData, params_data, count=1, offset=0):
@@ -52,9 +52,9 @@ class ClassVK(object):
             access_token = self.access_token
         params = dict(count=count, city=params_data.get("city").get("id"), offset=offset,
                       age_from=vk_user.settings['age_from'], age_to=vk_user.settings['age_to'],
-                      sex=self.sex_invert(params_data.get("sex")), access_token=access_token, v='5.131')
+                      sex=self.sex_invert(params_data.get("sex")), access_token=access_token, v='5.131', has_photo=1, status=6, sort=0)
 
-        pprint(params)
+        # pprint(params)
         res = requests.get(url, params=params)
         response = res.json().get("response")
         ids = []
@@ -63,7 +63,7 @@ class ClassVK(object):
         return ids
 
     def get_info(self, user_ids):
-        print(user_ids)
+        # print(user_ids)
         method = 'users.get'
         url = self.API_URL + method
         params = {
@@ -74,7 +74,7 @@ class ClassVK(object):
         }
         res = requests.get(url, params=params)
         response = res.json().get("response")
-        print(response)
+        # print(response)
         if response:
             return response[0]
         else:
