@@ -65,9 +65,9 @@ class Logic(object):
         return comand
 
     def update_search_list(self):
-        count = 5 #Размер пакета данных
+        count = 10 #Размер пакета данных
         position = self.vkUser.settings['srch_offset']
-        offset  = position  + 1
+        offset = position + 1
         list = self.api.search(self.vkUser, offset, count)
         self.db.insert_last_search(self.vkUser.vk_id, list, position)
 

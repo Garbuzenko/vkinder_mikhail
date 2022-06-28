@@ -59,7 +59,9 @@ class ClassVK(object):
         response = res.json().get("response")
         ids = []
         for r in response.get('items'):
-            ids.append(r.get("id"))
+            if r.get("can_access_closed"):
+                print(r)
+                ids.append(r.get("id"))
         return ids
 
     def get_info(self, user_ids):
