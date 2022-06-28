@@ -1,9 +1,11 @@
 ###########################
 # файл: databases.py
-# version: 0.1.7
+# version: 0.1.10
 ###########################
+
 import sqlalchemy
 from modules.db.dataclasses import VKUserData
+
 # Глобальный переменные и классы модуля
 POSTGRES_DB = 'postgresql://vkdbadmin:vk2022boT!!!@172.18.89.161:5432/vkusers'
 
@@ -64,7 +66,7 @@ class DataBase(object):
 
     # enf new_vk_user
 
-    #Вставить массив данных в last_search
+    # Вставить массив данных в last_search
     def insert_last_search(self, user_id, lst_ids, position):
         for lst_id in lst_ids:
             sql = f"""SELECT * FROM last_search WHERE vk_id='{user_id}' and lst_id='{lst_id}';
@@ -73,18 +75,44 @@ class DataBase(object):
             if result is None:
                 sql = f"""INSERT INTO last_search(vk_id, lst_id, srch_number) VALUES ('{user_id}','{lst_id}','{position}');
                               """
-                print(sql)
                 result = self.connection.execute(sql)
                 position += 1
+    
+    # end insert_last_search()
 
     # удалить пользователя ВКонтакте в базе данных
     def del_vkuser(self, vk_id: int) -> bool:
         pass
-
-
+  
     # сохранить в базе данных информацию об избранном контакте
     def new_favorite(self, vk_id: int, fav_id: int) -> bool:
-        pass
+        # проверяем , есть ли уже такой id в избранных
+        sql = f"""
+            SELECT * FROM favorites WHERE vk_id={vk_id} and fav_id={fav_id};
+            """
+        result = self.connection.execute(sql).fetchone()
+        # если есть то записей в базу данных не делаем
+        if result is not None:
+            return False
+        # если это новый id, то записываем его в базу данных
+        sql = f"""INSERT INTO favorites (vk_id, fav_id) VALUES ({vk_id}, {fav_id});
+               """
+        result = self.connection.execute(sql)
+        return True
+    # end new_favorite()
+    
+    # получить список избранных контактов
+    def get_favorites(self, vk_id : int) -> list:
+        sql = f"""
+            SELECT fav_id FROM favorites WHERE vk_id={vk_id};
+            """
+        result = self.connection.execute(sql).fetchall()
+        # если записей нет, то возвращаем пустой список
+        if result is None or len(result) == 0:
+            return list()
+        # возвращаем список fav_id
+        return list(zip(*list(result)))[0]
+    # end get_favorites()
 
     # удалить избранный контакт у пользовалетя из базы данных
     def del_favotite(self, vk_id: int, fav_id: int) -> bool:
@@ -96,49 +124,59 @@ class DataBase(object):
 
     # получить список заблокированных контактов
     def get_black_list(self, vk_id: int) -> list:
-        pass
+        sql = f"""
+            SELECT blk_id FROM black_list WHERE vk_id={vk_id};
+            """
+        result = self.connection.execute(sql).fetchall()
+        # если записей нет, то возвращаем пустой список
+        if result is None or len(result) == 0:
+            return list()
+        # разбиваем список из пары vk_id, fav_id и получаем list(fav_id)
+        return list(zip(*list(result)))[0]
+    # end get_black_list()
 
     # # сохранить заблокированный контакт
     def new_black_id(self, vk_id: int, blk_id: int) -> bool:
-        pass
+        # проверяем , есть ли уже такой id в блэк-листе
+        sql = f"""
+            SELECT * FROM black_list WHERE vk_id={vk_id} and blk_id={blk_id};
+            """
+        result = self.connection.execute(sql).fetchone()
+        # если есть то записей в базу данных не делаем
+        if result is not None:
+            return False
+        # если это новый id, то записываем его в базу данных
+        sql = f"""INSERT INTO black_list (vk_id, blk_id) VALUES ({vk_id}, {blk_id});
+               """
+        result = self.connection.execute(sql)
+        return True
 
     # удалить контакт из заблокированных
     def del_black_id(self, vk_id: int, blk_id: int) -> bool:
         pass
+    # end del_black_id()
 
     # удалить весь "блэк лист" пользователя
     def del_black_list(self, vk_id: int) -> bool:
         pass
 
-    #Настройки
-    def get_setings(self, user_id):
-        sql = f"""
-                  SELECT * FROM settings WHERE vk_id={user_id} LIMIT 1;
-                  """
-        result = self.connection.execute(sql).fetchone()
-        return result
     # считать дополнительные данные о пользователе из базы данных
-    def get_setings_smart(self, vk_user: VKUserData) -> bool:
-        result = self.get_setings(vk_user.vk_id)
-
+    def get_setings(self, vk_user: VKUserData) -> bool:
+        sql = f"""
+        SELECT * FROM settings WHERE vk_id={vk_user.vk_id};
+        """
+        result = self.connection.execute(sql).fetchone()
         # если запрос выполнился успешно
         if result is not None:
             # заполняем и возвращаем объект VKUserData
             # нулевой элемент списка это vk_id из таблицы bd.search
             vk_user.set_settings_from_list(list(result)[1:])
-        else:
+        else: 
             # если запрос к базе данных ничего не вернул
             vk_user.set_default_settings()
-            #Важно создать исходную настройку, чтобы потом делать UPDATE
-            self.set_setings( vk_user.vk_id,
-                              vk_user.settings.get('access_token'),
-                              vk_user.settings.get('srch_offset'),
-                              vk_user.settings.get('age_from'),
-                              vk_user.settings.get('age_to'),
-                              vk_user.settings.get('last_command'))
-            # return False
-        # return True
-        return vk_user
+            return False
+        return True
+    # end get_setings()
 
     def get_user(self, user_id, rch_number):
         sql = f"""
@@ -147,26 +185,25 @@ class DataBase(object):
         result = self.connection.execute(sql).fetchone()
         return result
 
-    #!!!получить список избранных контактов
-    def get_favorites(self, vk_id : int) -> list:
-        pass
-        favorites = [1000, 1001]
-        return favorites
-
-    def set_setings(self, user_id, access_token='', srch_offset=0, age_from=20, age_to=50, last_command=''):
+    # сохранение дополнительных параметров пользователя в базе данных
+    def set_setings(self, vk_user: VKUserData) -> bool:
         sql = f"""
         INSERT INTO settings(vk_id, access_token, srch_offset, age_from, age_to, last_command) 
-        VALUES ('{user_id}','{access_token}','{srch_offset}','{age_from}','{age_to}','{last_command}');
+        VALUES ('{vk_user.vk_id}','{vk_user.settings.get('access_token')}','{vk_user.settings.get('srch_offset')}','
+        {vk_user.settings.get('age_from')}','{vk_user.settings.get('age_to')}','{vk_user.settings.get('last_command')}');
                """
-        self.connection.execute(sql)
+        result = self.connection.execute(sql)
+        return True
 
-    def upd_setings(self, user_id, access_token='', srch_offset=0, age_from=20, age_to=50, last_command=''):
-
+    # обновить данные параметров пользователя в базе данных
+    def upd_setings(self, vk_user: VKUserData) -> bool:
 
         sql = f"""
-        UPDATE settings SET srch_offset = '{srch_offset}' where vk_id={user_id};
+        UPDATE settings SET srch_offset = '{vk_user.settings['srch_offset']}', access_token = '{vk_user.settings['access_token']}',
+        age_from = '{vk_user.settings['age_from']}',age_to = '{vk_user.settings['age_to']}', last_command = '{vk_user.settings['last_command']}' 
+        WHERE vk_id={vk_user.vk_id};
                """
-        res = self.connection.execute(sql)
-
+        result = self.connection.execute(sql)
+        return True
 
 

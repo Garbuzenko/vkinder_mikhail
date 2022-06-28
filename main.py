@@ -1,4 +1,6 @@
 import json
+from pprint import pprint
+
 from vk_api import VkApi
 from vk_api.utils import get_random_id
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
@@ -25,11 +27,12 @@ def run_comand(comand, user_id):
         elif key == 'age_to':
             pass
         elif key == 'black_list':
+            pprint(db.get_black_list(user_id))
             for l in db.get_black_list(user_id):
-                content += f'\n {l}'
+                content += f'{logic.api.get_user_data(l)[1]}'
         elif key == 'favorites':
             for l in db.get_favorites(user_id):
-                content += f'\n {l}'
+                content += f'{logic.api.get_user_data(l)[1]}'
     comand['content'] = content
     return comand
 
@@ -67,12 +70,12 @@ for event in longpoll.listen():
                 if event.object.payload.get('type') == 'show_snackbar':
                     if  'черный' in event.object.payload.get('text'):
                         print('add_black_list')
-                        db.new_black_id(event.object.user_id, logic.get_current_user(event.object.user_id))
-                        pass
+                        db.new_black_id(event.object.user_id, logic.get_user(user_id))
+                        # pass
                     elif 'избранное' in event.object.payload.get('text'):
                         print('add_favorites')
-                        db.new_favorite(event.object.user_id, logic.get_current_user(event.object.user_id))
-                        pass
+                        db.new_favorite(event.object.user_id, logic.get_user(user_id))
+                        # pass
                 r = vk.messages.sendMessageEventAnswer(
                     event_id=event.object.event_id,
                     user_id=user_id,
@@ -90,7 +93,7 @@ for event in longpoll.listen():
                     peer_id=event.object.peer_id,
                     keyboard=ClassKeyboard.get_keyboard(comand['keyboard']).get_keyboard(),
                     message=utils.get_answer(comand))
-        logic.upd_settings(user_id)
+        logic.upd_settings()
 
 if __name__ == '__main__':
     print("test")
